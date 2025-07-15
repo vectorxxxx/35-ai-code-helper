@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
@@ -23,6 +24,9 @@ public class AiCodeHelperServiceFactory
 
     @Resource
     private ContentRetriever contentRetriever;
+
+    @Resource
+    private McpToolProvider mcpToolProvider;
 
     @Bean
     public AiCodeHelperService aiCodeHelperService() {
@@ -62,8 +66,13 @@ public class AiCodeHelperServiceFactory
         // .chatMemory(MessageWindowChatMemory.withMaxMessages(10)).contentRetriever(contentRetriever).build();
 
         // 7. 工具调用
+        // return AiServices.builder(AiCodeHelperService.class).chatModel(qwenChatModel)
+        // .chatMemory(MessageWindowChatMemory.withMaxMessages(10)).contentRetriever(contentRetriever)
+        // .tools(new InterviewQuestionTool()).build();
+
+        // 8. MCP工具
         return AiServices.builder(AiCodeHelperService.class).chatModel(qwenChatModel)
                 .chatMemory(MessageWindowChatMemory.withMaxMessages(10)).contentRetriever(contentRetriever)
-                .tools(new InterviewQuestionTool()).build();
+                .tools(new InterviewQuestionTool()).toolProvider(mcpToolProvider).build();
     }
 }
