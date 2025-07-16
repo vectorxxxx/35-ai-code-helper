@@ -7,6 +7,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.mcp.McpToolProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
@@ -18,6 +19,18 @@ public class AiCodeHelperServiceFactory
 {
     @Resource
     private ChatModel qwenChatModel;
+
+    /**
+     * 注入自定义模型
+     */
+    @Resource
+    private ChatModel myQwenChatModel;
+
+    /**
+     * 流式对话模型
+     */
+    @Resource
+    private StreamingChatModel streamingChatModel;
 
     @Resource
     private EmbeddingStore<TextSegment> embeddingStore;
@@ -71,8 +84,22 @@ public class AiCodeHelperServiceFactory
         // .tools(new InterviewQuestionTool()).build();
 
         // 8. MCP工具
-        return AiServices.builder(AiCodeHelperService.class).chatModel(qwenChatModel)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(10)).contentRetriever(contentRetriever)
-                .tools(new InterviewQuestionTool()).toolProvider(mcpToolProvider).build();
+        // return
+        // AiServices.builder(AiCodeHelperService.class).chatModel(myQwenChatModel)
+        // .chatMemory(MessageWindowChatMemory.withMaxMessages(10)).contentRetriever(contentRetriever)
+        // .tools(new InterviewQuestionTool()).toolProvider(mcpToolProvider).build();
+
+        // 9. 流式对话
+        return AiServices.builder(AiCodeHelperService.class).chatModel(myQwenChatModel)
+                // 流式对话模型
+                .streamingChatModel(streamingChatModel).chatMemory(MessageWindowChatMemory.withMaxMessages(10))
+                // 每个会话独立存储
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                // RAG 检索增强生成
+                .contentRetriever(contentRetriever)
+                // 工具调用
+                .tools(new InterviewQuestionTool())
+                // MCP 工具调用
+                .toolProvider(mcpToolProvider).build();
     }
 }

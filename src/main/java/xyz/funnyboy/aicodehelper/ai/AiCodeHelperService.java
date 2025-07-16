@@ -7,6 +7,7 @@ import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.guardrail.InputGuardrails;
+import reactor.core.publisher.Flux;
 import xyz.funnyboy.aicodehelper.guardrail.SafeInputGuardrail;
 
 // @AiService
@@ -60,5 +61,19 @@ public interface AiCodeHelperService
      */
     @SystemMessage(fromResource = "system-prompt.txt")
     Result<String> chatWithRag(String userMessage);
+
+    /**
+     * 流式对话
+     *
+     * @param memoryId
+     *            内存 ID
+     * @param userMessage
+     *            用户消息
+     * @return {@link String }
+     */
+    @SystemMessage(fromResource = "system-prompt.txt")
+    Flux<String> chatStream(@MemoryId
+    int memoryId, @UserMessage
+    String userMessage);
 
 }
