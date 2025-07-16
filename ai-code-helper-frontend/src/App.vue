@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import axios from 'axios'
+import { marked } from 'marked'
 
 // 聊天消息结构：{ role: 'user' | 'ai', content: string }
 const messages = ref([])
@@ -52,9 +53,7 @@ function startSSE(userMsg) {
     eventSource && eventSource.close()
     eventSource = null
   }
-  eventSource.onopen = () => {
-    // 连接成功
-  }
+  eventSource.onopen = () => {}
   eventSource.addEventListener('end', () => {
     isLoading.value = false
     eventSource && eventSource.close()
@@ -67,6 +66,10 @@ function scrollToBottom() {
     chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   }
 }
+
+function renderMarkdown(md) {
+  return marked.parse(md)
+}
 </script>
 
 <template>
@@ -74,7 +77,14 @@ function scrollToBottom() {
     <h1 class="title">AI 编程小助手</h1>
     <div class="chat-container" ref="chatContainer">
       <div v-for="(msg, idx) in messages" :key="idx" :class="['chat-message', msg.role]">
-        <div class="bubble">{{ msg.content }}</div>
+        <div class="bubble">
+          <template v-if="msg.role === 'ai'">
+            <div v-html="renderMarkdown(msg.content)"></div>
+          </template>
+          <template v-else>
+            {{ msg.content }}
+          </template>
+        </div>
       </div>
       <div v-if="isLoading" class="loading">AI 正在回复...</div>
     </div>
@@ -86,9 +96,11 @@ function scrollToBottom() {
 </template>
 
 <style scoped>
+/* 优化页面宽度和居中展示 */
 .chat-app {
-  max-width: 600px;
-  margin: 40px auto;
+  max-width: 900px;
+  min-width: 340px;
+  margin: 0 auto;
   background: var(--color-background-soft);
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.08);
@@ -96,7 +108,19 @@ function scrollToBottom() {
   display: flex;
   flex-direction: column;
   height: 80vh;
+  position: relative;
+  top: 50%;
+  transform: translateY(8%);
 }
+
+body, #app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+}
+
 .title {
   text-align: center;
   margin-bottom: 12px;
@@ -129,6 +153,7 @@ function scrollToBottom() {
   background: var(--color-background-mute);
   color: var(--color-text);
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  word-break: break-word;
 }
 .chat-message.user .bubble {
   background: #4f9cff;
