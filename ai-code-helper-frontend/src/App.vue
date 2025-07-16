@@ -1,73 +1,6 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { marked } from 'marked'
-
-const input = ref('')
-const isLoading = ref(false)
-const messages = ref([])
-const memoryId = ref(0)
-const chatListRef = ref(null)
-let eventSource = null
-
-function generateMemoryId() {
-  return Math.floor(Math.random() * 1_000_000_000)
-}
-
-onMounted(() => {
-  memoryId.value = generateMemoryId()
-})
-
-function sendMessage() {
-  const msg = input.value.trim()
-  if (!msg || isLoading.value) return
-  messages.value.push({ role: 'user', content: msg })
-  input.value = ''
-  isLoading.value = true
-  nextTick(() => scrollToBottom())
-  startSSE(msg)
-}
-
-function startSSE(userMsg) {
-  if (eventSource) {
-    eventSource.close()
-    eventSource = null
-  }
-  const aiMsg = { role: 'ai', content: '', streaming: true }
-  messages.value.push(aiMsg)
-  const url = `http://localhost:8081/api/ai/chat?memoryId=${memoryId.value}&message=${encodeURIComponent(userMsg)}`
-  eventSource = new window.EventSource(url)
-  eventSource.addEventListener('message', async (e) => {
-    if (e.data) {
-      aiMsg.content += e.data
-      messages.value = [...messages.value] // 强制触发响应式刷新
-      await nextTick()
-      scrollToBottom()
-    }
-  })
-  eventSource.onerror = () => {
-    isLoading.value = false
-    eventSource && eventSource.close()
-    eventSource = null
-    aiMsg.streaming = false
-  }
-  eventSource.onopen = () => {}
-  eventSource.addEventListener('end', () => {
-    isLoading.value = false
-    eventSource && eventSource.close()
-    eventSource = null
-    aiMsg.streaming = false
-  })
-}
-
-function renderMarkdown(md) {
-  return marked.parse(md)
-}
-
-function scrollToBottom() {
-  if (chatListRef.value) {
-    chatListRef.value.scrollTop = chatListRef.value.scrollHeight
-  }
-}
+import { useChat } from './composables/useChat'
+const { input, isLoading, messages, chatListRef, sendMessage, renderMarkdown } = useChat()
 </script>
 
 <template>
@@ -89,12 +22,14 @@ function scrollToBottom() {
     </div>
     <div class="chat-list" ref="chatListRef" v-show="messages.length > 0">
       <div v-for="(msg, idx) in messages" :key="idx" :class="['chat-msg', msg.role]">
+        <span class="chat-avatar" v-if="msg.role === 'ai'">🤖</span>
+        <span class="chat-avatar" v-else>我</span>
         <template v-if="msg.role === 'ai'">
           <div v-if="msg.streaming" class="ai-streaming-preview"><pre>{{ msg.content }}</pre></div>
           <div v-else v-html="renderMarkdown(msg.content)"></div>
         </template>
         <template v-else>
-          {{ msg.content }}
+          <div>{{ msg.content }}</div>
         </template>
       </div>
     </div>

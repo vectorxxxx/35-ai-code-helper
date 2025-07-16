@@ -45,6 +45,7 @@ html, body, #app {
   letter-spacing: 2px;
   text-shadow: 0 0 8px #3a8bfd88, 0 0 2px #fff2;
   margin-bottom: 8px;
+  margin-top: 36px;
 }
 .sub-title {
   color: #bfc9e6;
@@ -52,6 +53,7 @@ html, body, #app {
   text-align: center;
   margin-bottom: 24px;
   letter-spacing: 1px;
+  margin-bottom: 24px;
 }
 .robot {
   font-size: 3.2rem;
@@ -96,6 +98,7 @@ html, body, #app {
   background: transparent;
   box-sizing: border-box;
   flex-shrink: 0;
+  margin-bottom: 36px;
 }
 .input-bar input, .input-bar button {
   height: 48px;
@@ -162,15 +165,42 @@ html, body, #app {
 
 .chat-msg {
   display: flex;
+  align-items: flex-end;
   width: 100%;
+  gap: 8px;
 }
 
 .chat-msg.user {
-  justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
 .chat-msg.ai {
-  justify-content: flex-start;
+  flex-direction: row;
+}
+
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #232946;
+  color: #6ec1fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px #0002;
+  margin: 0 4px;
+  user-select: none;
+}
+
+.chat-msg.user .chat-avatar {
+  background: #3a8bfd;
+  color: #fff;
+}
+
+.chat-msg > div:not(.chat-avatar) {
+  max-width: 90%;
 }
 
 .chat-msg > div {
@@ -258,4 +288,27 @@ html, body, #app {
   white-space: pre-wrap;
   word-break: break-all;
   opacity: 0.85;
+} 
+
+.chat-msg.ai h1, .chat-msg.ai h2, .chat-msg.ai h3 {
+  color: #6ec1fa;
+  font-weight: bold;
+  margin-top: 22px;
+  margin-bottom: 14px;
+}
+.chat-msg.ai p {
+  margin: 12px 0 12px 0;
+}
+.chat-msg.ai ul, .chat-msg.ai ol {
+  margin: 14px 0 14px 28px;
+  font-size: 1.08rem;
+}
+.chat-msg.ai li {
+  margin-bottom: 8px;
+}
+.chat-msg.ai pre {
+  margin: 18px 0;
+}
+.chat-msg.ai blockquote {
+  margin: 16px 0;
 } 
